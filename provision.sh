@@ -30,9 +30,13 @@ fi
 # Install dependencies and such.
 if [ "$DISTRO" == "Arch" ]; then
   sudo pacman -S $PACKAGES
+  sudo systemctl enable mongodb
+  sudo systemctl start mongodb
 
 elif [ "$DISTRO" == "Ubuntu" ] || [ "$DISTRO" == "Debian" ]; then
   sudo apt-get install -y $PACKAGES
+  sudo systemctl enable mongodb
+  sudo systemctl start mongodb
 
 elif [ "$DISTRO" == "Fedora" ]; then
   echo "i dont know how to yum."
@@ -63,25 +67,44 @@ else
 fi
 
 # install Ruby.
-if [ -z $(which ruby) ]; then
+if [ -d $HOME/.rvm/rubies/ruby-2.3.1/ ]; then
+  echo "Ruby Already installed."
+else
   gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
   curl -sSL https://get.rvm.io | bash -s stable
   rvm install ruby 2.3.1
+  source ~/.rvm/bin/rvm
+  gem install bundler
 fi
 
+# Install mongodb
 
-# Make dirs and shit.
-mkdir $HOME/farmbot
-cd $HOME/farmbot
 
-FB_GIT='https://github.com/FarmBot'
-git clone $FB_GIT/farmbot-raspberry-pi-controller.git
-git clone $FB_GIT/farmbot-web-frontend.git
-git clone $FB_GIT/farmbot-arduino-firmware.git
-git clone $FB_GIT/farmbot-js.git
-git clone $FB_GIT/farmbot-serial.git
-git clone $FB_GIT/farmbot-resource.git
+if [ -d $HOME/farmbot/ ]; then
+  echo "Dirs already found. Bailing."
+else
+  # Make dirs and shit.
+  mkdir $HOME/farmbot
+  cd $HOME/farmbot
 
-# These don't fit the naming scheme
-git clone $FB_GIT/FarmBot-Web-API.git
-git clone $FB_GIT/mqtt-gateway.git
+  FB_GIT='https://github.com/FarmBot'
+  git clone $FB_GIT/farmbot-raspberry-pi-controller.git
+  git clone $FB_GIT/farmbot-web-frontend.git
+  git clone $FB_GIT/farmbot-arduino-firmware.git
+  git clone $FB_GIT/farmbot-js.git
+  git clone $FB_GIT/farmbot-serial.git
+  git clone $FB_GIT/farmbot-resource.git
+
+  # These don't fit the naming scheme
+  git clone $FB_GIT/FarmBot-Web-API.git
+  git clone $FB_GIT/mqtt-gateway.git
+fi
+
+echo "Should I spin up a local debug instance? (Y/n)"
+echo "[NOTE] There is no error checking for this. You will probably need to get your hands dirty after this fails."
+read STARTR
+if [ -z "$STARTR" ] || [ "$STARTR" == "n" ] || [ "$STARTR" == "no" ]; then
+  exit 0;
+else
+  start_local_server.sh
+fi
