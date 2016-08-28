@@ -1,2 +1,2 @@
 # farmbot-dev-env
-Provision a linux (maybe osx later) machine for development. 
+THIS NOW EXISTS ON FARMBOT-LABS (https://github.com/FarmBot-Labs/farmbot-dev-env)
